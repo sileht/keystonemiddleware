@@ -114,12 +114,10 @@ class ConnectionPool(queue.Queue):
 
 
 class MemcacheClientPool(ConnectionPool):
-    def __init__(self, urls, dead_retry=None, socket_timeout=None, **kwargs):
+    def __init__(self, urls, arguments, **kwargs):
         ConnectionPool.__init__(self, **kwargs)
         self._urls = urls
-        self._dead_retry = dead_retry
-        self._socket_timeout = socket_timeout
-
+        self._arguments = arguments
         # NOTE(morganfainberg): The host objects expect an int for the
         # deaduntil value. Initialize this at 0 for each host with 0 indicating
         # the host is not dead.
@@ -140,9 +138,7 @@ class MemcacheClientPool(ConnectionPool):
         self._memcache_client_class = MemcacheClient
 
     def _create_connection(self):
-        return self._memcache_client_class(self._urls,
-                                           dead_retry=self._dead_retry,
-                                           socket_timeout=self._socket_timeout)
+        return self._memcache_client_class(self._urls, **self._arguments)
 
     def _destroy_connection(self, conn):
         conn.disconnect_all()
